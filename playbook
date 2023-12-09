@@ -1,0 +1,54 @@
+- name: Build & Deploy Docker Container
+  hosts: dockerservers
+  gather_facts: true
+  remote_user: root
+  tasks:
+
+    - name: Install pip
+      apt:
+        update_cache: yes
+        name:
+          - python3-pip
+
+    - name: Install docker
+      pip:
+        name: docker
+
+    - name: Stopping the Container
+      docker_container:
+        name: healet-container
+        image: healet:latest
+        state: present
+
+    - name: Removing the Container
+      docker_container:
+        name: healet-container
+        image: healet:latest
+        state: absent
+
+    - name: Removing Docker Image
+      docker_image:
+        name: healet:latest
+        state: absent
+
+    - name: Build Docker Image
+      docker_image:
+        name: healet:latest
+        source: build
+        build:
+          path: ~/project/
+        state: present
+
+    - name: Creating the Container
+      docker_container:
+        name: healet-container
+        image: healet:latest
+        ports:
+          - "80:80"
+
+
+
+scp -r /var/lib/jenkins/workspace/jenkins-project-name root@ip-addres:~/project/
+ansible-playbook /var/lib/jenkins/playbooks/deployment.yaml
+
+sudo apt install docker-compose
